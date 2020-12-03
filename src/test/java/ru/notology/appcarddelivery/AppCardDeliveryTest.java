@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AppCardDeliveryTest {
 
-    //Метод генерирует случайную дату в диапазоне от +3 до +30 дней от сегодняшней даты
+    /* Метод генерирует случайную дату в диапазоне от +3 до +30 дней от сегодняшней даты */
     String generateDate() {
         Random random = new Random();
         int randomInt = random.nextInt(31) + 3;
