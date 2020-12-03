@@ -91,7 +91,6 @@ public class AppCardDeliveryTest {
         dateForm.sendKeys(Keys.chord(Keys.CONTROL, "a") + Keys.DELETE);
         dateForm.setValue(date);
         $("[name='name']").setValue("Василий Петров");
-//        $("[name='phone']").setValue("+79067778899");
         $(".checkbox__box").click();
         $(".button__content").click();
         String text = $(".input_invalid[data-test-id='phone']").$(".input__sub").getText();
@@ -138,6 +137,22 @@ public class AppCardDeliveryTest {
         SelenideElement dateForm = $("[data-test-id='date'] .input__control");
         dateForm.sendKeys(Keys.chord(Keys.CONTROL, "a") + Keys.DELETE);
         dateForm.setValue(formattedDate);
+        $("[name='name']").setValue("Василий Петров");
+        $("[name='phone']").setValue("+79067778899");
+        $(".checkbox__box").click();
+        $(".button__content").click();
+        String text = $("[data-test-id='date']").$(".input_invalid").$(".input__sub").getText();
+        assertEquals("Заказ на выбранную дату невозможен", text.trim());
+    }
+
+    @Test
+    void shouldNotSubmitIfPastDate() {
+        String pastDate = "01.01.2020";
+        open("http://localhost:9999/");
+        $("[data-test-id='city'] .input__control").setValue("Москва");
+        SelenideElement dateForm = $("[data-test-id='date'] .input__control");
+        dateForm.sendKeys(Keys.chord(Keys.CONTROL, "a") + Keys.DELETE);
+        dateForm.setValue(pastDate);
         $("[name='name']").setValue("Василий Петров");
         $("[name='phone']").setValue("+79067778899");
         $(".checkbox__box").click();
