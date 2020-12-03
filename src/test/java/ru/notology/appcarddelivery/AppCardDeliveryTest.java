@@ -1,6 +1,7 @@
 package ru.notology.appcarddelivery;
 
 import com.codeborne.selenide.Condition;
+import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.Keys;
@@ -223,5 +224,59 @@ public class AppCardDeliveryTest {
         $(".button__content").click();
         String text = $(".input_invalid[data-test-id='phone']").$(".input__sub").getText();
         assertEquals("Телефон указан неверно. Должно быть 11 цифр, например, +79012345678.", text.trim());
+    }
+
+    /* ЗАДАНИЕ №2 */
+
+    @Test
+    void shouldChooseCityByDropDownList() {
+        String date = generateDate();
+        open("http://localhost:9999/");
+        $("[data-test-id='city'] .input__control").setValue("Мо");
+        $(".menu").shouldBe(Condition.visible).$(withText("Москва")).click();
+        SelenideElement dateForm = $("[data-test-id='date'] .input__control");
+        dateForm.sendKeys(Keys.chord(Keys.CONTROL, "a") + Keys.DELETE);
+        dateForm.setValue(date);
+        $("[name='name']").setValue("Василий Петров");
+        $("[name='phone']").setValue("+79067778899");
+        $(".checkbox__box").click();
+        $(".button__content").click();
+        String text = $(withText("Встреча успешно")).waitUntil(Condition.visible, 15000 ).getText();
+        assertEquals("Встреча успешно забронирована на " + date, text.trim());
+    }
+
+    /* В тесте реализован универсальный алгоритм поиска даты доставки через форму с календарем
+     *  Он умеет переключать месяц пока не найдёт нужную дату */
+    @Test
+    void shouldChooseDateByCalendar() {
+        open("http://localhost:9999/");
+        $("[data-test-id='city'] .input__control").setValue("Москва");
+        $(".icon_name_calendar").click();
+        String nextAvailableDayDataDayStringValue = $(".calendar__day[data-day]").getAttribute("data-day");
+        long nextAvailableDayDataDayLongValue = Long.parseLong(nextAvailableDayDataDayStringValue);
+        boolean isFound = false;
+        do {
+            ElementsCollection days = $$(".calendar__day[data-day]");
+            for (SelenideElement day : days) {
+                String dataDayStringValue = day.getAttribute("data-day");
+                long dataDayLongValue = Long.parseLong(dataDayStringValue);
+                /* Здесь указывается Unix-time значение, полученное вычитанием Unix-time
+                 *  значения ближайшей доступной даты из Unix-time значения нужной даты */
+                if (dataDayLongValue - nextAvailableDayDataDayLongValue == 6048000000L) {
+                    day.click();
+                    isFound = true;
+                }
+            }
+            if (!isFound) {
+                $(".calendar__arrow_direction_right[data-step='1']").click();
+            }
+        } while (!isFound);
+        String selectedDate = $("[data-test-id='date'] .input__control").getAttribute("value");
+        $("[name='name']").setValue("Василий Петров");
+        $("[name='phone']").setValue("+79067778899");
+        $(".checkbox__box").click();
+        $(".button__content").click();
+        String text = $(withText("Встреча успешно")).waitUntil(Condition.visible, 15000 ).getText();
+        assertEquals("Встреча успешно забронирована на " + selectedDate, text.trim());
     }
 }
